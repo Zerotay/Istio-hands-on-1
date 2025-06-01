@@ -1,0 +1,81 @@
+apiVersion: kiali.io/v1alpha1
+kind: Kiali
+metadata:
+  name: kiali-dashboard
+  namespace: istio-system
+spec:
+  additional_display_details:
+    - title: "API Documentation"
+      annotation: "kiali.io/api-spec"
+      icon_annotation: "kiali.io/api-type"
+
+  installation_tag: ""
+  istio_namespace: "istio-system"
+  version: "default"
+
+  auth:
+    strategy: "anonymous"
+
+  deployment:
+    accesible_namespaces:
+      - '**'
+    namespace: "istio-system"
+    service_type: "LoadBalancer"
+
+  server:
+    observability:
+      metrics:
+        enabled: false
+      tracing:
+        enabled: false
+
+  # default: extensions is an empty list
+  extensions:
+    - enabled: true
+      name: "skupper"
+
+  external_services:
+    grafana:
+      enabled: false
+      is_core: false
+    istio:
+      component_status:
+        enabled: true
+      config_map_name: "istio"
+      envoy_admin_local_port: 15000
+      istio_api_enabled: true
+      istio_identity_domain: "svc.cluster.local"
+      istio_injection_annotation: "sidecar.istio.io/inject"
+      istio_sidecar_annotation: "sidecar.istio.io/status"
+      # default: istio_sidecar_injector_config_map_name is undefined
+      istiod_deployment_name: "istiod"
+      istiod_pod_monitoring_port: 15014
+      root_namespace: "istio-system"
+    prometheus:
+      auth:
+        insecure_skip_verify: true
+        type: "none"
+      cache_duration: 10
+      cache_enabled: true
+      cache_expiration: 300
+      is_core: true
+      url: "http://prom-kube-prometheus-stack-prometheus.monitoring.svc:9090"
+    tracing:
+      auth:
+        type: "none"
+      enabled: true
+      internal_url: "http://jaeger-inmemory-instance-collector.istio-system.svc:4317"
+      is_core: true
+      namespace_selector: true
+      provider: "jaeger"
+      use_grpc: false
+#      use_grpc: true
+
+  istio_labels:
+    app_label_name: ""
+    egress_gateway_label: "istio=egressgateway"
+    ingress_gateway_label: "istio=ingressgateway"
+    injection_label_name: "istio-injection"
+    injection_label_rev: "istio.io/rev"
+    version_label_name: ""
+

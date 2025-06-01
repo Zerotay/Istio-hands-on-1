@@ -1,0 +1,38 @@
+- job_name: 'federate-${REMOTE}'
+  scrape_interval: 15s
+
+  honor_labels: true
+  metrics_path: '/federate'
+
+  params:
+    'match[]':
+      - '{job="monitoring/envoy-stats-monitor"}'
+#      - '{job="kubernetes-pods"}'
+
+  static_configs:
+    - targets:
+        - '${EXTERNAL_IP}:9090'
+      labels:
+        cluster: '${REMOTE}'
+
+- job_name: 'federate-local'
+
+  honor_labels: true
+  metrics_path: '/federate'
+
+  metric_relabel_configs:
+    - replacement: '${CURRENT}'
+      target_label: cluster
+
+  static_configs:
+    - targets:
+        - 'localhost:9090'
+#  kubernetes_sd_configs:
+#    - role: pod
+#      namespaces:
+#        names: ['istio-system']
+  params:
+    'match[]':
+      - '{job="monitoring/envoy-stats-monitor"}'
+#      - '{__name__=~"istio_(.*)"}'
+#      - '{__name__=~"pilot(.*)"}'

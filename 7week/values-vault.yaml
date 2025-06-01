@@ -1,0 +1,29 @@
+global:
+  enabled: true
+#  tlsDisable: true  # Disable TLS for demo purposes
+
+server:
+  standalone:
+    enabled: true
+    replicas: 1  # 단일 노드 실행
+    config: |
+      disable_mlock = true
+      
+          listener "tcp" {
+          address = "[::]:8200"
+          cluster_address = "[::]:8201"
+          tls_disable = 1
+          }
+
+      storage "raft" { # Raft 구성 권장
+        path = "/vault/data"
+        node_id = "vault-dev-node-1"
+      }
+  service:
+    enabled: true
+    type: LoadBalancer
+
+injector:
+  enabled: false
+ui:
+  enabled: false
