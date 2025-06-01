@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: ratings
+spec:
+  hosts:
+  - ratings
+  http:
+  - retries:
+      attempts: 5
+      perTryTimeout: 7s
+      retryOn: 5xx
+    route:
+      - destination:
+          host: ratings
