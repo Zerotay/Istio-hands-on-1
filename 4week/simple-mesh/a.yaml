@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: a
+spec:
+  selector:
+    app: a
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9090
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: a
+  annotations:
+    instrumentation.opentelemetry.io/inject-python: "true"
+  labels:
+    app: a
+spec:
+  containers:
+    - name: a
+      image: zerotay/simple-mesh:1.1.0
+      env:
+        - name: HOST
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: ADDRESS
+          value: "0.0.0.0"
+        - name: PORT
+          value: "9090"
+        - name: DELAY
+          value: "0.5"
+        - name: OTEL_SERVICE_NAME
+          value: a
+        - name: OTEL_TRACES_EXPORTER
+          value: console,otlp
+        - name: OTEL_METRICS_EXPORTER
+          value: console
+        - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+          value: jaeger-inmemory-instance-collector.istioinaction.svc:4317

@@ -1,0 +1,10 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: python-instrument
+spec:
+  exporter:
+    endpoint: jaeger-inmemory-instance-collector.istioinaction.svc:4317
+  propagators:
+    - tracecontext
+    - baggage

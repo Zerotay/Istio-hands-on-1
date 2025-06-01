@@ -1,0 +1,28 @@
+apiVersion: telemetry.istio.io/v1
+kind: Telemetry
+metadata:
+  namespace: istio-system
+  name: tracing
+spec:
+  metrics:
+    - providers:
+        - name: prometheus
+      overrides:
+        - match:
+            metric: REQUEST_COUNT
+          tagOverrides:
+            upstream_proxy_version:
+              operation: UPSERT
+              value: "string(xds.node.metadata.ISTIO_VERSION)"
+            source_mesh_id:
+              operation: UPSERT
+              value: "xds.node.metadata.MESH_ID"
+
+  tracing:
+    - providers:
+        - name: jaeger
+      randomSamplingPercentage: 20.0
+      customTags:
+        my_tag:
+          literal:
+            value: "zerotay"

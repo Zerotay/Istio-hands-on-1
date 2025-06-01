@@ -1,0 +1,21 @@
+apiVersion: telemetry.istio.io/v1
+kind: Telemetry
+metadata:
+  name: modify-label
+  namespace: istio-system
+spec:
+  metrics:
+    - providers:
+        - name: prometheus
+      overrides:
+        - match:
+            metric: REQUEST_COUNT
+          tagOverrides:
+            request_protocol:
+              operation: REMOVE
+            upstream_proxy_version:
+              operation: UPSERT
+              value: "string(xds.node.metadata.ISTIO_VERSION)"
+            source_mesh_id:
+              operation: UPSERT
+              value: "xds.node.metadata.MESH_ID"
