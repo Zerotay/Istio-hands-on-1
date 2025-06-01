@@ -1,0 +1,14 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: "webapp-allow-view-default-ns"
+  namespace: istioinaction
+spec:
+  rules:
+    - to:
+        - operation:
+            methods:
+              - GET
+#  - from:
+#      - source:
+#          namespaces: ["default"]

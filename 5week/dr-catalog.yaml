@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: catalog-virtualservice
+spec:
+  gateways:
+    - cootstore-gateway
+  hosts:
+    - "catalog.istioinaction.io"
+  http:
+    - route:
+        - destination:
+            host: catalog
+            port:
+              number: 80

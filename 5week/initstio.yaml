@@ -1,0 +1,55 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  profile: default
+  components:
+    pilot:
+      k8s:
+        env:
+          - name: PILOT_FILTER_GATEWAY_CLUSTER_CONFIG
+            value: "true"
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
+        service:
+          type: NodePort
+          ports:
+          - name: http
+            port: 80
+            targetPort: 8080
+            nodePort: 30000
+          - name: https
+            port: 443
+            targetPort: 8443
+            nodePort: 30005
+          externalTrafficPolicy: Local
+  meshConfig:
+    outboundTrafficPolicy:
+       mode: ALLOW_ANY
+    enableTracing: true
+    defaultProviders:
+      metrics:
+        - prometheus
+      tracing: []
+    extensionProviders:
+      - name: "sample-ext-authz-grpc"
+        envoyExtAuthzGrpc:
+          service: "ext-authz.foo.svc.cluster.local"
+          port: "9000"
+      - name: "sample-ext-authz-http"
+        envoyExtAuthzHttp:
+          service: "ext-authz.istioinaction.svc.cluster.local"
+          port: "8000"
+          includeRequestHeadersInCheck: [ "x-ext-authz" ]
+          headersToUpstreamOnAllow: [ "authorization", "path", "x-auth-request-user", "x-auth-request-email", "x-auth-request-access-token" ]
+          headersToDownstreamOnAllow: [ "set-cookie" ]
+          headersToDownstreamOnDeny: [ "content-type", "set-cookie" ]
+    accessLogFile: /dev/stdout
+  values:
+    global:
+      variant: distroless
+    pilot:
+      env:
+        ENABLE_NATIVE_SIDECARS: true
+
