@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-user-gateway-injected
+spec:
+  selector:
+    matchLabels:
+      ingress: my-user-gateway-injected
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
+        inject.istio.io/templates: gateway
+      labels:
+        ingress: my-user-gateway-injected
+    spec:
+      containers:
+        - name: istio-proxy
+          image: auto
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: my-gateway
+spec:
+  selector:
+    ingress: my-user-gateway-injected
+  servers:
+    - port:
+        number: 8080
+        name: http
+        protocol: HTTP
+      hosts:
+        - "webapp.istioinaction.io"

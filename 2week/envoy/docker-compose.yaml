@@ -1,0 +1,51 @@
+services:
+  httpbin:
+    container_name: httpbin
+    image: mccutchen/go-httpbin
+    environment:
+      PORT: "8000"
+    ports:
+    - "8000:8000"
+    restart: unless-stopped
+    networks:
+      - envoy-net
+  netshoot:
+    container_name: netshoot
+    image: nicolaka/netshoot
+    restart: unless-stopped
+    networks:
+      - envoy-net
+    command: sh -c "sleep 60d"
+    stop_grace_period: 1s
+  envoy:
+    container_name: envoy
+    build:
+        context: .
+    # image: envoyproxy/envoy:v1.33.2
+    restart: unless-stopped
+    networks:
+      - envoy-net
+    command: envoy -c /dynamic.yaml
+    # command: envoy -c /simple.yaml
+    configs:
+      - simple.yaml
+      - dynamic.yaml
+    ports:
+    - "15000:15000"
+    - "15001:15001"
+    volumes:
+      # - ./lds.yaml:/lds.yaml
+      - ./cds.yaml:/cds.yaml
+networks:
+   envoy-net:
+    driver: bridge
+configs:
+  simple.yaml:
+    file: ./simple.yaml
+  dynamic.yaml:
+    file: ./dynamic.yaml
+  # lds.yaml:
+  #   file: ./lds.yaml
+  # cds.yaml:
+  #   file: ./cds.yaml
+

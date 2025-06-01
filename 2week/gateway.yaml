@@ -1,0 +1,33 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: bookinfo-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 8443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+#        mode: MUTUAL
+        credentialName: webapp-credential-mtls
+      hosts:
+        - "webapp.istioinaction.io"
+    - port:
+        number: 8443
+        name: tcp-sni
+        protocol: TLS
+      hosts:
+        - "simple-sni-1.istioinaction.io"
+      tls:
+        mode: PASSTHROUGH
+    - port:
+        number: 8080
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"
+        # - "webapp.istioinaction.io"

@@ -1,0 +1,40 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  profile: default
+  components:
+    pilot:
+      k8s:
+        env:
+          - name: PILOT_FILTER_GATEWAY_CLUSTER_CONFIG
+            value: "true"
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
+        service:
+          type: NodePort
+          ports:
+          - name: http
+            port: 80
+            targetPort: 8080
+            nodePort: 30000
+          - name: https
+            port: 443
+            targetPort: 8443
+            nodePort: 30005
+          externalTrafficPolicy: Local
+    egressGateways:
+    - name: istio-egressgateway
+      enabled: false
+  meshConfig:
+    outboundTrafficPolicy:
+      mode: ALLOW_ANY
+    defaultProviders:
+      metrics:
+      - prometheus
+      tracing: []
+  values:
+    pilot:
+      env:
+        ENABLE_NATIVE_SIDECARS: true
