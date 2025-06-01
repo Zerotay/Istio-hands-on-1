@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "test"
+  namespace: "default"
+data:
+  subjects: "sam"
+  secret_role_prefix: "secret"

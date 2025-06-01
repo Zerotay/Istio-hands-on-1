@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: probe
+  namespace: istioinaction
+  labels:
+    app: probe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: probe
+  template:
+    metadata:
+      labels:
+        app: probe
+    spec:
+      containers:
+        - name: probe
+          image: nginx
+          livenessProbe:
+            httpGet:
+              port: 80
+          readinessProbe:
+            httpGet:
+              port: 80

@@ -1,0 +1,20 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: "deny-secret-policy"
+spec:
+  failurePolicy: Fail
+  paramKind:
+    apiVersion: v1
+    kind: ConfigMap
+  matchConstraints:
+    resourceRules:
+      - apiGroups:   ["rbac.authorization.k8s.io"]
+        apiVersions: ["v1"]
+        operations:  ["CREATE", "UPDATE"]
+        resources:   ["roles", "rolebindings"]
+  validations:
+    - expression: "params != null"
+      message: "params missing but required to bind to this policy"
+      messageExpression: "string(params.data.subjects)"
+    - expression: "false"

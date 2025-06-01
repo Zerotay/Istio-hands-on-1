@@ -1,0 +1,103 @@
+#apiVersion: v1
+#kind: ConfigMap
+#metadata:
+#  name: "test"
+#  namespace: "default"
+#data:
+#  subjects: "sam"
+#  secret_role_prefix: "secret"
+#---
+#apiVersion: admissionregistration.k8s.io/v1
+#kind: ValidatingAdmissionPolicy
+#metadata:
+#  name: "deny-secret-policy"
+#spec:
+#  failurePolicy: Fail
+#  paramKind:
+#    apiVersion: v1
+#    kind: ConfigMap
+#  matchConstraints:
+#    resourceRules:
+#      - apiGroups:   ["rbac.authorization.k8s.io"]
+#        apiVersions: ["v1"]
+#        operations:  ["CREATE", "UPDATE"]
+#        resources:   ["roles", "rolebindings"]
+#  validations:
+#    - expression: "params != null"
+#      message: "params missing but required to bind to this policy"
+#      messageExpression: "string(params.data.subjects)"
+#    - expression: "false"
+#---
+#apiVersion: admissionregistration.k8s.io/v1
+#kind: ValidatingAdmissionPolicyBinding
+#metadata:
+#  name: "default-deny-secret"
+#spec:
+#  paramRef:
+#    name: "test"
+#    namespace: "default"
+#    parameterNotFoundAction: Deny
+#  policyName: "deny-secret-policy"
+#  validationActions: [Deny]
+#  matchResources:
+#    namespaceSelector:
+#      matchLabels:
+#        kubernetes.io/metadata.name: default
+#---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "test"
+  namespace: "default"
+data:
+  subjects: "sam"
+  secret_role_prefix: "secret"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: "deny-secret-policy"
+spec:
+  failurePolicy: Fail
+  paramKind:
+    apiVersion: v1
+    kind: ConfigMap
+  matchConstraints:
+    resourceRules:
+      - apiGroups:   ["rbac.authorization.k8s.io"]
+        apiVersions: ["v1"]
+        operations:  ["CREATE", "UPDATE"]
+        resources:   ["roles", "rolebindings"]
+  variables:
+    - name: requester
+      expression: "request.userInfo.username"
+    - name: blacklist
+      expression: "string('sam')"
+  matchConditions:
+    - name: 'only_subjects'
+      # expression: "request.userInfo.username in variables.blacklist"
+      expression: "request.userInfo.username in string(params.data.subjects).replace(' ', '').split(',')"
+  validations:
+    - expression: "params != null"
+      message: "params missing but required to bind to this policy"
+      messageExpression: "string(params.data.subjects)"
+    - expression: "object.kind == 'Role' ? !(object.rules.exists(x, x.resources.exists(y, y == 'secrets'))) : true"
+      messageExpression: "string(variables.requester) + ' is not allowed to create ' + string(object.kind) + ' about secrets'"
+    - expression: "object.kind == 'RoleBinding' ? !(object.subjects.exists(x, x.name == variables.blacklist) && object.roleRef.name.startsWith('secret')) : true"
+      messageExpression: "string(variables.requester) + ' is not allowed to create ' + string(object.kind) + ' about secrets'"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: "default-deny-secret"
+spec:
+  paramRef:
+    name: "test"
+    namespace: "default"
+    parameterNotFoundAction: Deny
+  policyName: "deny-secret-policy"
+  validationActions: [Deny]
+  matchResources:
+    namespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: default

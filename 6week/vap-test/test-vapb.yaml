@@ -1,0 +1,15 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: "default-deny-secret"
+spec:
+  paramRef:
+    name: "test"
+    namespace: "default"
+    parameterNotFoundAction: Deny
+  policyName: "deny-secret-policy"
+  validationActions: [Deny]
+  matchResources:
+    namespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: default
