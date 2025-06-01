@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: debug
+spec:
+  volumes:
+    - name: local
+      hostPath:
+        path: "/istiobook"
+  containers:
+    - name: debug
+      image: nicolaka/netshoot
+      command: [sh, -c, "sleep 60d"]
+      volumeMounts:
+        - mountPath: /istiobook
+          name: local
+  terminationGracePeriodSeconds: 0

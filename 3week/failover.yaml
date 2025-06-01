@@ -1,0 +1,17 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: simple-backend-dr
+spec:
+  host: simple-backend.istioinaction.svc.cluster.local
+  trafficPolicy:
+    outlierDetection:
+      consecutive5xxErrors: 1
+      interval: 5s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 100
+    loadBalancer:
+      localityLbSetting:
+        failover:
+          - from: us-west1.us-west1-b
+            to: us-west1.us-west1-a

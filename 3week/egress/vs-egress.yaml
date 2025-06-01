@@ -1,0 +1,33 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: vs-egress
+  namespace: istioinaction
+spec:
+  gateways:
+    - egress-gateway
+    - mesh
+  hosts:
+    - jsonplaceholder.typicode.com
+  http:
+    - name: for-mesh
+      match:
+        - gateways:
+            - mesh
+          port: 80
+      route:
+        - destination:
+            host: istio-egressgateway.istio-system.svc.cluster.local
+#            subset: json
+            port:
+              number: 80
+    - name: for-gateway
+      match:
+        - gateways:
+            - egress-gateway
+          port: 80
+      route:
+        - destination:
+            host: jsonplaceholder.typicode.com
+            port:
+              number: 80

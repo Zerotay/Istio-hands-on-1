@@ -1,0 +1,14 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: webapp
+  namespace: istioinaction
+spec:
+  selector:
+    matchLabels:
+      app: webapp
+  accessLogging:
+  - providers:
+    - name: envoy
+    disabled: false
+
