@@ -1,0 +1,17 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-with-header
+spec:
+#  selector:
+#    matchLabels:
+#      app: reviews
+  targetRef:
+    kind: Service
+    name: reviews
+  action: DENY
+  rules:
+    - when:
+        - key: request.headers[deny]
+          values:
+            - "true"

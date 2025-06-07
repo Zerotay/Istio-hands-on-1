@@ -1,0 +1,15 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-review-debug
+spec:
+  selector:
+    matchLabels:
+      app: reviews
+#  action: ALLOW
+  action: DENY
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/default/sa/debug
