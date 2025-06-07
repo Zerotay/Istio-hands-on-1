@@ -39,7 +39,10 @@ docker run -d --rm --name mypc --network kind nicolaka/netshoot sleep infinity
 
 # MetalLB
 kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.9/config/manifests/metallb-native.yaml
-kubectl -n metallb-system wait --for condition=available  deployment controller --timeout=60s
+# The status of Deployment doesn't ensure the readiness of its Pods.
+#kubectl -n metallb-system wait --for condition=available  deployment controller --timeout=60s
+kubectl -n metallb-system wait --for condition=Ready  po --timeout=60s --all=true
+sleep 1
 cat << EOF | kubectl apply -f -
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
@@ -49,7 +52,8 @@ metadata:
 spec:
   addresses:
   - 172.18.255.101-172.18.255.120
----
+EOF
+cat << EOF | kubectl apply -f -
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
 metadata:
