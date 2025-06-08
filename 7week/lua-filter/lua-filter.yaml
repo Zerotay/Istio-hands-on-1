@@ -1,0 +1,66 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: httpbin-lua-extension
+  namespace: istioinaction
+spec:
+  workloadSelector:
+    labels:
+      app: httpbin
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        portNumber: 80
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+            subFilter:
+              name: "envoy.filters.http.router"
+    patch:
+      operation: INSERT_BEFORE
+      value: 
+       name: envoy.lua
+       typed_config:
+          "@type": "type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua"
+          inlineCode: |
+            function envoy_on_request(request_handle)
+              local headers, test_bucket = request_handle:httpCall(
+              "headerer",
+              {
+                [":method"] = "GET",
+                [":path"] = "/header",
+                [":scheme"] = "http",
+                [":authority"] = "headerer.istioinaction.svc.cluster.local",
+                ["accept"] = "*/*"
+              }, "", 5000) 
+              for key, value in pairs(headers) do
+                if not string.match(key, "^:") then
+                request_handle:headers():add(key, value)
+                end
+              end
+            end          
+            function envoy_on_response(response_handle)
+              response_handle:headers():add("istioinaction", "it works!")
+            end
+  - applyTo: CLUSTER
+    match:
+      context: SIDECAR_OUTBOUND
+    patch:
+      operation: ADD
+      value: # cluster specification
+        name: headerer
+        type: STRICT_DNS
+        connect_timeout: 0.5s
+        lb_policy: ROUND_ROBIN
+        load_assignment:
+          cluster_name: headerer
+          endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    protocol: TCP
+                    address: headerer.istioinaction.svc.cluster.local
+                    port_value: 80

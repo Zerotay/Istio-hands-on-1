@@ -54,6 +54,5 @@ done | sort | uniq -c
 # Delete all
 ###############################################################################
 kubectl delete envoyfilter -n istioinaction --all
-kubectl get envoyfilter -A
 kubectl delete -f ch14/rate-limit/rlsconfig.yaml -n istioinaction
 kubectl delete -f ch14/rate-limit/rls.yaml -n istioinaction
